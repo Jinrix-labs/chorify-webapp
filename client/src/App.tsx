@@ -14,13 +14,26 @@ import ProfileHeader from "@/components/ProfileHeader";
 import BottomNav from "@/components/BottomNav";
 import AssignmentBanner from "@/components/AssignmentBanner";
 import NotificationPermissionDialog from "@/components/NotificationPermissionDialog";
+import WeeklyChampionBanner from "@/components/WeeklyChampionBanner";
 import { notifications } from "@/lib/notifications";
+import { useWeeklyReset } from "@/hooks/useWeeklyReset";
 
 function App() {
   //todo: remove mock functionality - replace with real auth
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isParent, setIsParent] = useState(false);
   const [activeTab, setActiveTab] = useState("chores");
+  const [currentUserName] = useState("Alex");
+  
+  //todo: remove mock functionality - replace with real family data
+  const familyMembers = [
+    { id: "1", name: "Alex", avatar: "🐱", weeklyPoints: 340, totalPoints: 1240 },
+    { id: "2", name: "Sarah", avatar: "🦄", weeklyPoints: 450, totalPoints: 1350 },
+    { id: "3", name: "Jamie", avatar: "🦖", weeklyPoints: 280, totalPoints: 980 },
+  ];
+  
+  const { champion } = useWeeklyReset(familyMembers);
+  const isCurrentUserChampion = champion?.name === currentUserName;
   
   //todo: remove mock functionality - replace with real notification data
   const [newAssignments, setNewAssignments] = useState([
@@ -94,7 +107,12 @@ function App() {
               weeklyPoints={340}
               streak={7}
               notificationCount={newAssignments.length}
+              isChampion={isCurrentUserChampion}
             />
+
+            {champion && !isCurrentUserChampion && (
+              <WeeklyChampionBanner champion={champion} />
+            )}
 
             <AssignmentBanner
               assignments={newAssignments}
