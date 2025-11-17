@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,8 +15,10 @@ import BottomNav from "@/components/BottomNav";
 import AssignmentBanner from "@/components/AssignmentBanner";
 import NotificationPermissionDialog from "@/components/NotificationPermissionDialog";
 import WeeklyChampionBanner from "@/components/WeeklyChampionBanner";
+import InstallPrompt from "@/components/InstallPrompt";
 import { notifications } from "@/lib/notifications";
 import { useWeeklyReset } from "@/hooks/useWeeklyReset";
+import { applyAvatarTheme } from "@/lib/avatarThemes";
 
 function App() {
   //todo: remove mock functionality - replace with real auth
@@ -34,6 +36,11 @@ function App() {
   
   const { champion } = useWeeklyReset(familyMembers);
   const isCurrentUserChampion = champion?.name === currentUserName;
+  const [currentUserAvatar] = useState("🐱");
+  
+  useEffect(() => {
+    applyAvatarTheme(currentUserAvatar);
+  }, [currentUserAvatar]);
   
   //todo: remove mock functionality - replace with real notification data
   const [newAssignments, setNewAssignments] = useState([
@@ -60,6 +67,8 @@ function App() {
     console.log("Login data:", data);
     setIsLoggedIn(true);
     setIsParent(data.isParent);
+    
+    applyAvatarTheme(data.avatar);
     
     if (data.isParent) {
       console.log("🎉 Parent mode activated! You have special powers.");
@@ -92,6 +101,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <InstallPrompt />
         <NotificationPermissionDialog
           onPermissionGranted={() => console.log("Notifications enabled!")}
           onPermissionDenied={() => console.log("Notifications denied")}
