@@ -11,11 +11,28 @@ import RewardsPage from "@/pages/RewardsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ProfileHeader from "@/components/ProfileHeader";
 import BottomNav from "@/components/BottomNav";
+import AssignmentBanner from "@/components/AssignmentBanner";
 
 function App() {
   //todo: remove mock functionality - replace with real auth
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState("chores");
+  
+  //todo: remove mock functionality - replace with real notification data
+  const [newAssignments, setNewAssignments] = useState([
+    {
+      id: "1",
+      assignedBy: "MOM",
+      choreTitle: "Clean your room",
+      emoji: "🧹",
+    },
+    {
+      id: "2",
+      assignedBy: "DAD",
+      choreTitle: "Take out the recycling",
+      emoji: "♻️",
+    },
+  ]);
 
   const handleLogin = (data: {
     name: string;
@@ -49,7 +66,18 @@ function App() {
               rank={2}
               weeklyPoints={340}
               streak={7}
-              notificationCount={3}
+              notificationCount={newAssignments.length}
+            />
+
+            <AssignmentBanner
+              assignments={newAssignments}
+              onDismiss={(id) => {
+                setNewAssignments(newAssignments.filter((a) => a.id !== id));
+              }}
+              onViewChore={(id) => {
+                console.log("View chore:", id);
+                setActiveTab("chores");
+              }}
             />
 
             <div className="md:hidden">
