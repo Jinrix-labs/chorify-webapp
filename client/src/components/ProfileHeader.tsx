@@ -7,6 +7,7 @@ interface ProfileHeaderProps {
   points: number;
   rank: number;
   weeklyPoints: number;
+  streak?: number;
   notificationCount?: number;
 }
 
@@ -16,6 +17,7 @@ export default function ProfileHeader({
   points,
   rank,
   weeklyPoints,
+  streak = 0,
   notificationCount = 0,
 }: ProfileHeaderProps) {
   return (
@@ -41,13 +43,18 @@ export default function ProfileHeader({
           </p>
         </div>
       </div>
-      <div className="flex gap-2 text-sm">
+      <div className="flex flex-wrap gap-2 text-sm">
         <Badge variant="secondary" className="gap-1">
           🏆 Rank #{rank}
         </Badge>
         <Badge variant="secondary" className="gap-1">
           ⭐ {weeklyPoints} this week
         </Badge>
+        {streak > 0 && (
+          <Badge variant="default" className="gap-1 bg-accent text-accent-foreground">
+            🔥 {streak} day streak!
+          </Badge>
+        )}
       </div>
     </Card>
   );

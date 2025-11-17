@@ -13,6 +13,7 @@ export default function ProfilePage() {
     weeklyPoints: 340,
     completedChores: 42,
     rank: 2,
+    streak: 7,
   };
 
   const stats = [
@@ -20,6 +21,7 @@ export default function ProfilePage() {
     { label: "This Week", value: user.weeklyPoints, emoji: "📅" },
     { label: "Completed Chores", value: user.completedChores, emoji: "✅" },
     { label: "Current Rank", value: `#${user.rank}`, emoji: "🏆" },
+    { label: "Day Streak", value: user.streak, emoji: "🔥" },
   ];
 
   return (
@@ -41,10 +43,16 @@ export default function ProfilePage() {
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="text-center p-4 bg-muted rounded-lg"
+                className={`text-center p-4 rounded-lg ${
+                  stat.label === "Day Streak"
+                    ? "bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/50"
+                    : "bg-muted"
+                }`}
               >
                 <div className="text-3xl mb-2">{stat.emoji}</div>
-                <div className="text-2xl font-black text-primary mb-1">
+                <div className={`text-2xl font-black mb-1 ${
+                  stat.label === "Day Streak" ? "text-orange-600 dark:text-orange-400" : "text-primary"
+                }`}>
                   {stat.value}
                 </div>
                 <div className="text-xs text-muted-foreground">

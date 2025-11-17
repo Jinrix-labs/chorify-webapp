@@ -48,6 +48,7 @@ function App() {
               points={1240}
               rank={2}
               weeklyPoints={340}
+              streak={7}
               notificationCount={3}
             />
 

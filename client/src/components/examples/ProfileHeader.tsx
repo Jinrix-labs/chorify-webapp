@@ -9,6 +9,7 @@ export default function ProfileHeaderExample() {
         points={340}
         rank={2}
         weeklyPoints={85}
+        streak={7}
         notificationCount={3}
       />
     </div>

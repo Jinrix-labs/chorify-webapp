@@ -15,6 +15,7 @@ export default function ChoreCardExample() {
         onComplete={() => console.log('Completed!')}
       />
       
+      <h3 className="text-lg font-semibold mt-6 mb-2">Unassigned Chore (Try the claim button!)</h3>
       <ChoreCard
         id="2"
         emoji="🐕"

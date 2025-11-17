@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, UserCircle } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 
 interface ChoreCardProps {
   id: string;
@@ -28,6 +29,16 @@ export default function ChoreCard({
   onClaimChore,
   showActions = true,
 }: ChoreCardProps) {
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  const handleClaim = () => {
+    setIsClaiming(true);
+    setTimeout(() => {
+      onClaimChore?.();
+      setIsClaiming(false);
+    }, 1000);
+  };
+
   return (
     <Card className="p-6 hover-elevate transition-all">
       <div className="flex items-start gap-4">
@@ -64,13 +75,19 @@ export default function ChoreCard({
               )}
               {onClaimChore && (
                 <Button
-                  onClick={onClaimChore}
+                  onClick={handleClaim}
                   variant="default"
-                  className="flex-1"
+                  size="lg"
+                  className={`flex-1 text-lg font-bold transition-all duration-500 ${
+                    isClaiming
+                      ? "bg-green-500 hover:bg-green-600 animate-spin"
+                      : ""
+                  }`}
                   data-testid="button-claim-chore"
+                  disabled={isClaiming}
                 >
-                  <UserCircle className="w-4 h-4 mr-2" />
-                  I'll Do It!
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  {isClaiming ? "Claimed!" : "Claim this chore!"}
                 </Button>
               )}
             </div>
