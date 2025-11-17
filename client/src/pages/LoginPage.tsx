@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import AvatarPicker from "@/components/AvatarPicker";
+import { getAvatarTheme, applyAvatarTheme } from "@/lib/avatarThemes";
 
 interface LoginPageProps {
   onLogin: (data: { name: string; familyCode: string; avatar: string; isParent: boolean }) => void;
@@ -14,6 +16,14 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [name, setName] = useState("");
   const [familyCode, setFamilyCode] = useState("");
   const [avatar, setAvatar] = useState("🐱");
+  
+  const currentTheme = getAvatarTheme(avatar);
+  
+  useEffect(() => {
+    if (isSignup) {
+      applyAvatarTheme(avatar);
+    }
+  }, [avatar, isSignup]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +87,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
           {isSignup && (
             <div>
-              <Label className="text-base mb-3 block">Pick Your Avatar</Label>
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-base">Pick Your Avatar</Label>
+                <Badge variant="outline" className="text-xs">
+                  Colors change with your avatar!
+                </Badge>
+              </div>
               <AvatarPicker selected={avatar} onSelect={setAvatar} />
+              <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <p className="text-sm text-center">
+                  <span className="font-semibold text-primary">{currentTheme.name}</span> theme selected
+                </p>
+              </div>
             </div>
           )}
 

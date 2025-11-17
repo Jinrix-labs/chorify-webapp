@@ -90,6 +90,8 @@ export const applyAvatarTheme = (avatar: string) => {
   
   root.style.setProperty('--primary', theme.primary);
   root.style.setProperty('--primary-foreground', '0 0% 100%');
+  root.style.setProperty('--secondary', theme.secondary);
+  root.style.setProperty('--secondary-foreground', '0 0% 100%');
   root.style.setProperty('--accent', theme.accent);
   root.style.setProperty('--accent-foreground', '0 0% 100%');
   
