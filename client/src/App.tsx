@@ -9,6 +9,7 @@ import ChoresPage from "@/pages/ChoresPage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import RewardsPage from "@/pages/RewardsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import ParentDashboard from "@/pages/ParentDashboard";
 import ProfileHeader from "@/components/ProfileHeader";
 import BottomNav from "@/components/BottomNav";
 import AssignmentBanner from "@/components/AssignmentBanner";
@@ -18,6 +19,7 @@ import { notifications } from "@/lib/notifications";
 function App() {
   //todo: remove mock functionality - replace with real auth
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isParent, setIsParent] = useState(false);
   const [activeTab, setActiveTab] = useState("chores");
   
   //todo: remove mock functionality - replace with real notification data
@@ -40,9 +42,15 @@ function App() {
     name: string;
     familyCode: string;
     avatar: string;
+    isParent: boolean;
   }) => {
     console.log("Login data:", data);
     setIsLoggedIn(true);
+    setIsParent(data.isParent);
+    
+    if (data.isParent) {
+      console.log("🎉 Parent mode activated! You have special powers.");
+    }
     
     // Simulate receiving assignment notifications on login
     // In a real app, these would come from the server
@@ -101,17 +109,18 @@ function App() {
 
             <div className="md:hidden">
               {activeTab === "chores" && <ChoresPage />}
+              {activeTab === "parent" && isParent && <ParentDashboard />}
               {activeTab === "leaderboard" && <LeaderboardPage />}
               {activeTab === "rewards" && <RewardsPage />}
               {activeTab === "profile" && <ProfilePage />}
             </div>
 
             <div className="hidden md:block">
-              <ChoresPage />
+              {isParent ? <ParentDashboard /> : <ChoresPage />}
             </div>
           </div>
 
-          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isParent={isParent} />
         </div>
         <Toaster />
       </TooltipProvider>

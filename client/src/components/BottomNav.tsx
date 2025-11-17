@@ -1,17 +1,25 @@
-import { Home, Trophy, Gift, User } from "lucide-react";
+import { Home, Trophy, Gift, User, Crown } from "lucide-react";
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  isParent?: boolean;
 }
 
-export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
-  const tabs = [
-    { id: "chores", label: "Chores", icon: Home },
-    { id: "leaderboard", label: "Leaderboard", icon: Trophy },
-    { id: "rewards", label: "Rewards", icon: Gift },
-    { id: "profile", label: "Profile", icon: User },
-  ];
+export default function BottomNav({ activeTab, onTabChange, isParent = false }: BottomNavProps) {
+  const tabs = isParent
+    ? [
+        { id: "chores", label: "Chores", icon: Home },
+        { id: "parent", label: "Parent", icon: Crown },
+        { id: "leaderboard", label: "Board", icon: Trophy },
+        { id: "profile", label: "Profile", icon: User },
+      ]
+    : [
+        { id: "chores", label: "Chores", icon: Home },
+        { id: "leaderboard", label: "Leaderboard", icon: Trophy },
+        { id: "rewards", label: "Rewards", icon: Gift },
+        { id: "profile", label: "Profile", icon: User },
+      ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-40">

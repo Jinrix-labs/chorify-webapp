@@ -6,6 +6,7 @@ interface LeaderboardEntry {
   avatar: string;
   points: number;
   isCurrentUser?: boolean;
+  isParent?: boolean;
 }
 
 interface LeaderboardCardProps {
@@ -40,7 +41,10 @@ export default function LeaderboardCard({ entries }: LeaderboardCardProps) {
             </div>
             <span className="text-4xl flex-shrink-0">{entry.avatar}</span>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">{entry.name}</p>
+              <p className="font-semibold truncate flex items-center gap-1">
+                {entry.name}
+                {entry.isParent && <span className="text-xl">👑</span>}
+              </p>
             </div>
             <div className="flex-shrink-0">
               <span className="text-2xl font-black text-primary">

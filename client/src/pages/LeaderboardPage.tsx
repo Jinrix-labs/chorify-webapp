@@ -5,19 +5,19 @@ import LeaderboardCard from "@/components/LeaderboardCard";
 export default function LeaderboardPage() {
   //todo: remove mock functionality
   const weeklyLeaderboard = [
-    { rank: 1, name: "Sarah", avatar: "🦄", points: 450, isCurrentUser: false },
-    { rank: 2, name: "Alex", avatar: "🐱", points: 340, isCurrentUser: true },
-    { rank: 3, name: "Jamie", avatar: "🦖", points: 280, isCurrentUser: false },
-    { rank: 4, name: "Mom", avatar: "🦁", points: 210, isCurrentUser: false },
-    { rank: 5, name: "Dad", avatar: "🐻", points: 185, isCurrentUser: false },
+    { rank: 1, name: "Sarah", avatar: "🦄", points: 450, isCurrentUser: false, isParent: false },
+    { rank: 2, name: "Alex", avatar: "🐱", points: 340, isCurrentUser: true, isParent: false },
+    { rank: 3, name: "Jamie", avatar: "🦖", points: 280, isCurrentUser: false, isParent: false },
+    { rank: 4, name: "Mom", avatar: "🦁", points: 210, isCurrentUser: false, isParent: true },
+    { rank: 5, name: "Dad", avatar: "🐻", points: 185, isCurrentUser: false, isParent: true },
   ];
 
   const monthlyLeaderboard = [
-    { rank: 1, name: "Alex", avatar: "🐱", points: 1240, isCurrentUser: true },
-    { rank: 2, name: "Sarah", avatar: "🦄", points: 1180, isCurrentUser: false },
-    { rank: 3, name: "Jamie", avatar: "🦖", points: 980, isCurrentUser: false },
-    { rank: 4, name: "Dad", avatar: "🐻", points: 750, isCurrentUser: false },
-    { rank: 5, name: "Mom", avatar: "🦁", points: 690, isCurrentUser: false },
+    { rank: 1, name: "Alex", avatar: "🐱", points: 1240, isCurrentUser: true, isParent: false },
+    { rank: 2, name: "Sarah", avatar: "🦄", points: 1180, isCurrentUser: false, isParent: false },
+    { rank: 3, name: "Jamie", avatar: "🦖", points: 980, isCurrentUser: false, isParent: false },
+    { rank: 4, name: "Dad", avatar: "🐻", points: 750, isCurrentUser: false, isParent: true },
+    { rank: 5, name: "Mom", avatar: "🦁", points: 690, isCurrentUser: false, isParent: true },
   ];
 
   return (

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import AvatarPicker from "@/components/AvatarPicker";
 
 interface LoginPageProps {
-  onLogin: (data: { name: string; familyCode: string; avatar: string }) => void;
+  onLogin: (data: { name: string; familyCode: string; avatar: string; isParent: boolean }) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
@@ -18,7 +18,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && familyCode.trim()) {
-      onLogin({ name: name.trim(), familyCode: familyCode.trim(), avatar });
+      // Check if family code ends with "boss" for parent mode
+      const isParent = familyCode.toLowerCase().endsWith("boss");
+      const cleanFamilyCode = isParent 
+        ? familyCode.slice(0, -4).trim() 
+        : familyCode.trim();
+      
+      onLogin({ 
+        name: name.trim(), 
+        familyCode: cleanFamilyCode.toUpperCase(), 
+        avatar,
+        isParent 
+      });
     }
   };
 
