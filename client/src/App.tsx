@@ -12,6 +12,8 @@ import ProfilePage from "@/pages/ProfilePage";
 import ProfileHeader from "@/components/ProfileHeader";
 import BottomNav from "@/components/BottomNav";
 import AssignmentBanner from "@/components/AssignmentBanner";
+import NotificationPermissionDialog from "@/components/NotificationPermissionDialog";
+import { notifications } from "@/lib/notifications";
 
 function App() {
   //todo: remove mock functionality - replace with real auth
@@ -41,6 +43,18 @@ function App() {
   }) => {
     console.log("Login data:", data);
     setIsLoggedIn(true);
+    
+    // Simulate receiving assignment notifications on login
+    // In a real app, these would come from the server
+    if (newAssignments.length > 0) {
+      newAssignments.forEach((assignment) => {
+        notifications.choreAssigned(
+          assignment.assignedBy,
+          assignment.choreTitle,
+          assignment.emoji
+        );
+      });
+    }
   };
 
   if (!isLoggedIn) {
@@ -57,6 +71,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <NotificationPermissionDialog
+          onPermissionGranted={() => console.log("Notifications enabled!")}
+          onPermissionDenied={() => console.log("Notifications denied")}
+        />
+        
         <div className="min-h-screen bg-background">
           <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
             <ProfileHeader

@@ -6,6 +6,7 @@ import ChoreCard from "@/components/ChoreCard";
 import AddChoreDialog from "@/components/AddChoreDialog";
 import CompletionCelebration from "@/components/CompletionCelebration";
 import { Plus } from "lucide-react";
+import { notifications } from "@/lib/notifications";
 
 export default function ChoresPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -42,13 +43,19 @@ export default function ChoresPage() {
     { id: "5", name: "Dad", avatar: "🐻" },
   ];
 
-  const handleComplete = (points: number) => {
+  const handleComplete = (points: number, choreTitle: string, emoji: string) => {
     console.log("Completed chore, earned", points, "points");
     setCelebration(points);
+    
+    // Send notification to family members
+    notifications.choreCompleted("Alex", choreTitle, points, emoji);
   };
 
-  const handleClaimChore = (choreId: string) => {
+  const handleClaimChore = (choreId: string, choreTitle: string, emoji: string) => {
     console.log("Claimed chore:", choreId);
+    
+    // Send notification
+    notifications.choreClaimed("You", choreTitle, emoji);
   };
 
   return (
@@ -85,7 +92,7 @@ export default function ChoresPage() {
                   emoji={chore.emoji}
                   title={chore.title}
                   points={chore.points}
-                  onClaimChore={() => handleClaimChore(chore.id)}
+                  onClaimChore={() => handleClaimChore(chore.id, chore.title, chore.emoji)}
                 />
               ))}
             </div>
@@ -112,7 +119,7 @@ export default function ChoresPage() {
                   points={chore.points}
                   assignedTo={{ name: "You", avatar: "🐱" }}
                   assignedBy={chore.assignedBy}
-                  onComplete={() => handleComplete(chore.points)}
+                  onComplete={() => handleComplete(chore.points, chore.title, chore.emoji)}
                 />
               ))}
             </div>
