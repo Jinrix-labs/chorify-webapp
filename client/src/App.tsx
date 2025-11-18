@@ -25,7 +25,8 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isParent, setIsParent] = useState(false);
   const [activeTab, setActiveTab] = useState("chores");
-  const [currentUserName] = useState("Alex");
+  const [currentUserName, setCurrentUserName] = useState("Alex");
+  const [currentUserAvatar, setCurrentUserAvatar] = useState("🐱");
   
   //todo: remove mock functionality - replace with real family data
   const familyMembers = [
@@ -36,11 +37,6 @@ function App() {
   
   const { champion } = useWeeklyReset(familyMembers);
   const isCurrentUserChampion = champion?.name === currentUserName;
-  const [currentUserAvatar] = useState("🐱");
-  
-  useEffect(() => {
-    applyAvatarTheme(currentUserAvatar);
-  }, [currentUserAvatar]);
   
   //todo: remove mock functionality - replace with real notification data
   const [newAssignments, setNewAssignments] = useState([
@@ -67,6 +63,8 @@ function App() {
     console.log("Login data:", data);
     setIsLoggedIn(true);
     setIsParent(data.isParent);
+    setCurrentUserName(data.name);
+    setCurrentUserAvatar(data.avatar);
     
     applyAvatarTheme(data.avatar);
     
@@ -110,8 +108,8 @@ function App() {
         <div className="min-h-screen bg-background">
           <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
             <ProfileHeader
-              name="Alex"
-              avatar="🐱"
+              name={currentUserName}
+              avatar={currentUserAvatar}
               points={1240}
               rank={2}
               weeklyPoints={340}
