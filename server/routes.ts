@@ -106,8 +106,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Chore not found" });
       }
 
-      const updated = await storage.updateChoreStatus(req.params.id, "claimed", memberId);
-      res.json(updated);
+      const updated = await storage.updateChoreStatus(req.params.id, "claimed");
+      if (updated) {
+        const assigned = await storage.assignChore(updated.id, memberId, memberId);
+        res.json(assigned);
+      } else {
+        res.status(500).json({ error: "Failed to claim chore" });
+      }
     } catch (error) {
       console.error("Claim chore error:", error);
       res.status(500).json({ error: "Failed to claim chore" });

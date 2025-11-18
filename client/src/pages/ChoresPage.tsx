@@ -1,62 +1,131 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChoreCard from "@/components/ChoreCard";
 import AddChoreDialog from "@/components/AddChoreDialog";
 import CompletionCelebration from "@/components/CompletionCelebration";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { notifications } from "@/lib/notifications";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Chore, Member } from "@shared/schema";
 
 export default function ChoresPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [celebration, setCelebration] = useState<number | null>(null);
+  const { member, family } = useAuth();
+  const { toast } = useToast();
 
-  //todo: remove mock functionality
-  const unassignedChores = [
-    { id: "1", emoji: "🗑️", title: "Take out the trash", points: 10 },
-    { id: "2", emoji: "🐕", title: "Feed the dog", points: 15 },
-  ];
+  const { data: chores, isLoading: choresLoading } = useQuery<Chore[]>({
+    queryKey: ["/api/families", family?.id, "chores"],
+    enabled: !!family?.id,
+  });
 
-  const myChores = [
-    {
-      id: "3",
-      emoji: "🧹",
-      title: "Vacuum the living room",
-      points: 20,
-      assignedBy: "Mom",
+  const { data: familyMembers } = useQuery<Member[]>({
+    queryKey: ["/api/families", family?.id, "members"],
+    enabled: !!family?.id,
+  });
+
+  const claimChoreMutation = useMutation({
+    mutationFn: async ({ choreId, memberId }: { choreId: string; memberId: string }) => {
+      const res = await apiRequest("PATCH", `/api/chores/${choreId}/claim`, { memberId });
+      return res.json();
     },
-    {
-      id: "4",
-      emoji: "🍽️",
-      title: "Load the dishwasher",
-      points: 10,
-      assignedBy: "Dad",
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
+      const chore = chores?.find((c) => c.id === variables.choreId);
+      if (chore) {
+        notifications.choreClaimed(member?.name || "You", chore.title, chore.emoji);
+      }
     },
-  ];
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to claim chore: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const familyMembers = [
-    { id: "1", name: "Alex", avatar: "🐱" },
-    { id: "2", name: "Sarah", avatar: "🦄" },
-    { id: "3", name: "Jamie", avatar: "🦖" },
-    { id: "4", name: "Mom", avatar: "🦁" },
-    { id: "5", name: "Dad", avatar: "🐻" },
-  ];
+  const completeChoreMutation = useMutation({
+    mutationFn: async ({ choreId, memberId }: { choreId: string; memberId: string }) => {
+      const res = await apiRequest("PATCH", `/api/chores/${choreId}/complete`, { memberId });
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
+      const chore = chores?.find((c) => c.id === variables.choreId);
+      if (chore) {
+        setCelebration(chore.points);
+        notifications.choreCompleted(member?.name || "You", chore.title, chore.points, chore.emoji);
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to complete chore: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleComplete = (points: number, choreTitle: string, emoji: string) => {
-    console.log("Completed chore, earned", points, "points");
-    setCelebration(points);
-    
-    // Send notification to family members
-    notifications.choreCompleted("Alex", choreTitle, points, emoji);
+  const createChoreMutation = useMutation({
+    mutationFn: async (chore: { emoji: string; title: string; points: number; assignedToId?: string }) => {
+      const res = await apiRequest("POST", "/api/chores", {
+        familyId: family?.id,
+        emoji: chore.emoji,
+        title: chore.title,
+        points: chore.points,
+        assignedToId: chore.assignedToId || null,
+        assignedById: member?.id || null,
+        completedById: null,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
+      toast({
+        title: "Success!",
+        description: "Chore created successfully! 🎉",
+      });
+      setShowAddDialog(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create chore: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleComplete = (choreId: string) => {
+    if (!member?.id) return;
+    completeChoreMutation.mutate({ choreId, memberId: member.id });
   };
 
-  const handleClaimChore = (choreId: string, choreTitle: string, emoji: string) => {
-    console.log("Claimed chore:", choreId);
-    
-    // Send notification
-    notifications.choreClaimed("You", choreTitle, emoji);
+  const handleClaimChore = (choreId: string) => {
+    if (!member?.id) return;
+    claimChoreMutation.mutate({ choreId, memberId: member.id });
   };
+
+  const handleAddChore = (chore: { emoji: string; title: string; points: number; assignedToId?: string }) => {
+    createChoreMutation.mutate(chore);
+  };
+
+  const unassignedChores = chores?.filter((c) => c.status === "available") || [];
+  const myChores = chores?.filter((c) => c.assignedToId === member?.id && c.status === "claimed") || [];
+
+  if (choresLoading) {
+    return (
+      <div className="pb-20 md:pb-6 flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20 md:pb-6">
@@ -92,7 +161,7 @@ export default function ChoresPage() {
                   emoji={chore.emoji}
                   title={chore.title}
                   points={chore.points}
-                  onClaimChore={() => handleClaimChore(chore.id, chore.title, chore.emoji)}
+                  onClaimChore={() => handleClaimChore(chore.id)}
                 />
               ))}
             </div>
@@ -110,18 +179,21 @@ export default function ChoresPage() {
         <TabsContent value="mine" className="space-y-4">
           {myChores.length > 0 ? (
             <div className="space-y-4">
-              {myChores.map((chore) => (
-                <ChoreCard
-                  key={chore.id}
-                  id={chore.id}
-                  emoji={chore.emoji}
-                  title={chore.title}
-                  points={chore.points}
-                  assignedTo={{ name: "You", avatar: "🐱" }}
-                  assignedBy={chore.assignedBy}
-                  onComplete={() => handleComplete(chore.points, chore.title, chore.emoji)}
-                />
-              ))}
+              {myChores.map((chore) => {
+                const assignedByMember = familyMembers?.find((m) => m.id === chore.assignedById);
+                return (
+                  <ChoreCard
+                    key={chore.id}
+                    id={chore.id}
+                    emoji={chore.emoji}
+                    title={chore.title}
+                    points={chore.points}
+                    assignedTo={{ name: "You", avatar: member?.avatar || "🐱" }}
+                    assignedBy={assignedByMember?.name}
+                    onComplete={() => handleComplete(chore.id)}
+                  />
+                );
+              })}
             </div>
           ) : (
             <Card className="p-12 text-center">
@@ -138,8 +210,8 @@ export default function ChoresPage() {
       <AddChoreDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        familyMembers={familyMembers}
-        onAddChore={(chore) => console.log("New chore added:", chore)}
+        familyMembers={familyMembers || []}
+        onAddChore={handleAddChore}
       />
 
       {celebration !== null && (

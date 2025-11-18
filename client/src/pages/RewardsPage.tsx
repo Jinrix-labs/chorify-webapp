@@ -1,23 +1,67 @@
+import { useQuery, useMutation } from "@tanstack/react-query";
 import RewardCard from "@/components/RewardCard";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Reward } from "@shared/schema";
 
 export default function RewardsPage() {
-  //todo: remove mock functionality
-  const currentPoints = 340;
+  const { member, family } = useAuth();
+  const { toast } = useToast();
 
-  const rewards = [
-    { id: "1", emoji: "🍕", title: "Pick dinner tonight", pointCost: 100 },
-    { id: "2", emoji: "📱", title: "Extra 30 min screen time", pointCost: 200 },
-    { id: "3", emoji: "🎮", title: "Choose game night activity", pointCost: 150 },
-    { id: "4", emoji: "🎬", title: "Movie pick this weekend", pointCost: 250 },
-    { id: "5", emoji: "🍦", title: "Ice cream outing", pointCost: 300 },
-    { id: "6", emoji: "🎨", title: "Skip one chore", pointCost: 400 },
-  ];
+  const { data: rewards, isLoading } = useQuery<Reward[]>({
+    queryKey: ["/api/families", family?.id, "rewards"],
+    enabled: !!family?.id,
+  });
+
+  const redeemMutation = useMutation({
+    mutationFn: async ({ rewardId, memberId }: { rewardId: string; memberId: string }) => {
+      const res = await apiRequest("POST", `/api/rewards/${rewardId}/redeem`, { memberId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "members"] });
+      toast({
+        title: "Success!",
+        description: "Reward redeemed successfully! 🎉",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to redeem reward: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleClaimReward = (rewardId: string) => {
-    console.log("Claimed reward:", rewardId);
+    if (!member?.id) return;
+    
+    const reward = rewards?.find((r) => r.id === rewardId);
+    if (!reward) return;
+    
+    if (member.totalPoints < reward.pointCost) {
+      toast({
+        title: "Not enough points",
+        description: `You need ${reward.pointCost - member.totalPoints} more points to claim this reward.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    redeemMutation.mutate({ rewardId, memberId: member.id });
   };
+
+  if (isLoading) {
+    return (
+      <div className="pb-20 md:pb-6 flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20 md:pb-6">
@@ -30,14 +74,14 @@ export default function RewardsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {rewards.map((reward) => (
+        {rewards?.map((reward) => (
           <RewardCard
             key={reward.id}
             id={reward.id}
             emoji={reward.emoji}
             title={reward.title}
             pointCost={reward.pointCost}
-            currentPoints={currentPoints}
+            currentPoints={member?.totalPoints || 0}
             onClaim={() => handleClaimReward(reward.id)}
           />
         ))}

@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
 import LoginPage from "@/pages/LoginPage";
 import ChoresPage from "@/pages/ChoresPage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
@@ -19,16 +20,14 @@ import InstallPrompt from "@/components/InstallPrompt";
 import { notifications } from "@/lib/notifications";
 import { useWeeklyReset } from "@/hooks/useWeeklyReset";
 import { applyAvatarTheme } from "@/lib/avatarThemes";
+import type { Member, Family } from "@shared/schema";
 
 function App() {
-  //todo: remove mock functionality - replace with real auth
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isParent, setIsParent] = useState(false);
+  const [currentMember, setCurrentMember] = useState<Member | null>(null);
+  const [currentFamily, setCurrentFamily] = useState<Family | null>(null);
   const [activeTab, setActiveTab] = useState("chores");
-  const [currentUserName, setCurrentUserName] = useState("Alex");
-  const [currentUserAvatar, setCurrentUserAvatar] = useState("🐱");
   
-  //todo: remove mock functionality - replace with real family data
   const familyMembers = [
     { id: "1", name: "Alex", avatar: "🐱", weeklyPoints: 340, totalPoints: 1240 },
     { id: "2", name: "Sarah", avatar: "🦄", weeklyPoints: 450, totalPoints: 1350 },
@@ -36,10 +35,9 @@ function App() {
   ];
   
   const { champion } = useWeeklyReset(familyMembers);
-  const isCurrentUserChampion = champion?.name === currentUserName;
+  const isCurrentUserChampion = champion?.name === currentMember?.name;
   
-  //todo: remove mock functionality - replace with real notification data
-  const [newAssignments, setNewAssignments] = useState([
+  const [newAssignments] = useState([
     {
       id: "1",
       assignedBy: "MOM",
@@ -54,26 +52,18 @@ function App() {
     },
   ]);
 
-  const handleLogin = (data: {
-    name: string;
-    familyCode: string;
-    avatar: string;
-    isParent: boolean;
-  }) => {
+  const handleLogin = (data: { member: Member; family: Family }) => {
     console.log("Login data:", data);
+    setCurrentMember(data.member);
+    setCurrentFamily(data.family);
     setIsLoggedIn(true);
-    setIsParent(data.isParent);
-    setCurrentUserName(data.name);
-    setCurrentUserAvatar(data.avatar);
     
-    applyAvatarTheme(data.avatar);
+    applyAvatarTheme(data.member.avatar);
     
-    if (data.isParent) {
+    if (data.member.isParent) {
       console.log("🎉 Parent mode activated! You have special powers.");
     }
     
-    // Simulate receiving assignment notifications on login
-    // In a real app, these would come from the server
     if (newAssignments.length > 0) {
       newAssignments.forEach((assignment) => {
         notifications.choreAssigned(
@@ -99,56 +89,60 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <InstallPrompt />
-        <NotificationPermissionDialog
-          onPermissionGranted={() => console.log("Notifications enabled!")}
-          onPermissionDenied={() => console.log("Notifications denied")}
-        />
-        
-        <div className="min-h-screen bg-background">
-          <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-            <ProfileHeader
-              name={currentUserName}
-              avatar={currentUserAvatar}
-              points={1240}
-              rank={2}
-              weeklyPoints={340}
-              streak={7}
-              notificationCount={newAssignments.length}
-              isChampion={isCurrentUserChampion}
-            />
+        <AuthProvider member={currentMember} family={currentFamily}>
+          <InstallPrompt />
+          <NotificationPermissionDialog
+            onPermissionGranted={() => console.log("Notifications enabled!")}
+            onPermissionDenied={() => console.log("Notifications denied")}
+          />
+          
+          <div className="min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+              <ProfileHeader
+                name={currentMember?.name || ""}
+                avatar={currentMember?.avatar || "🐱"}
+                points={currentMember?.totalPoints || 0}
+                rank={2}
+                weeklyPoints={currentMember?.weeklyPoints || 0}
+                streak={currentMember?.streak || 0}
+                notificationCount={newAssignments.length}
+                isChampion={isCurrentUserChampion}
+              />
 
-            {champion && !isCurrentUserChampion && (
-              <WeeklyChampionBanner champion={champion} />
-            )}
+              {champion && !isCurrentUserChampion && (
+                <WeeklyChampionBanner champion={champion} />
+              )}
 
-            <AssignmentBanner
-              assignments={newAssignments}
-              onDismiss={(id) => {
-                setNewAssignments(newAssignments.filter((a) => a.id !== id));
-              }}
-              onViewChore={(id) => {
-                console.log("View chore:", id);
-                setActiveTab("chores");
-              }}
-            />
+              {newAssignments.length > 0 && (
+                <AssignmentBanner
+                  assignments={newAssignments}
+                  onDismiss={(id) => {
+                    console.log("Dismiss assignment:", id);
+                  }}
+                  onViewChore={(id) => {
+                    console.log("View chore:", id);
+                    setActiveTab("chores");
+                  }}
+                />
+              )}
 
-            <div className="md:hidden">
-              {activeTab === "chores" && <ChoresPage />}
-              {activeTab === "parent" && isParent && <ParentDashboard />}
-              {activeTab === "leaderboard" && <LeaderboardPage />}
-              {activeTab === "rewards" && <RewardsPage />}
-              {activeTab === "profile" && <ProfilePage />}
+              <div className="md:hidden">
+                {activeTab === "chores" && <ChoresPage />}
+                {activeTab === "parent" && currentMember?.isParent && <ParentDashboard />}
+                {activeTab === "leaderboard" && <LeaderboardPage />}
+                {activeTab === "rewards" && <RewardsPage />}
+                {activeTab === "profile" && <ProfilePage />}
+              </div>
+
+              <div className="hidden md:block">
+                {currentMember?.isParent ? <ParentDashboard /> : <ChoresPage />}
+              </div>
             </div>
 
-            <div className="hidden md:block">
-              {isParent ? <ParentDashboard /> : <ChoresPage />}
-            </div>
+            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isParent={currentMember?.isParent || false} />
           </div>
-
-          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isParent={isParent} />
-        </div>
-        <Toaster />
+          <Toaster />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -1,24 +1,56 @@
-import { useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LeaderboardCard from "@/components/LeaderboardCard";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import type { Member } from "@shared/schema";
 
 export default function LeaderboardPage() {
-  //todo: remove mock functionality
-  const weeklyLeaderboard = [
-    { rank: 1, name: "Sarah", avatar: "🦄", points: 450, isCurrentUser: false, isParent: false },
-    { rank: 2, name: "Alex", avatar: "🐱", points: 340, isCurrentUser: true, isParent: false },
-    { rank: 3, name: "Jamie", avatar: "🦖", points: 280, isCurrentUser: false, isParent: false },
-    { rank: 4, name: "Mom", avatar: "🦁", points: 210, isCurrentUser: false, isParent: true },
-    { rank: 5, name: "Dad", avatar: "🐻", points: 185, isCurrentUser: false, isParent: true },
-  ];
+  const { member, family } = useAuth();
 
-  const monthlyLeaderboard = [
-    { rank: 1, name: "Alex", avatar: "🐱", points: 1240, isCurrentUser: true, isParent: false },
-    { rank: 2, name: "Sarah", avatar: "🦄", points: 1180, isCurrentUser: false, isParent: false },
-    { rank: 3, name: "Jamie", avatar: "🦖", points: 980, isCurrentUser: false, isParent: false },
-    { rank: 4, name: "Dad", avatar: "🐻", points: 750, isCurrentUser: false, isParent: true },
-    { rank: 5, name: "Mom", avatar: "🦁", points: 690, isCurrentUser: false, isParent: true },
-  ];
+  const { data: members, isLoading } = useQuery<Member[]>({
+    queryKey: ["/api/families", family?.id, "members"],
+    enabled: !!family?.id,
+  });
+
+  const weeklyLeaderboard = useMemo(() => {
+    if (!members) return [];
+    
+    return [...members]
+      .sort((a, b) => b.weeklyPoints - a.weeklyPoints)
+      .map((m, index) => ({
+        rank: index + 1,
+        name: m.name,
+        avatar: m.avatar,
+        points: m.weeklyPoints,
+        isCurrentUser: m.id === member?.id,
+        isParent: m.isParent,
+      }));
+  }, [members, member?.id]);
+
+  const monthlyLeaderboard = useMemo(() => {
+    if (!members) return [];
+    
+    return [...members]
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .map((m, index) => ({
+        rank: index + 1,
+        name: m.name,
+        avatar: m.avatar,
+        points: m.totalPoints,
+        isCurrentUser: m.id === member?.id,
+        isParent: m.isParent,
+      }));
+  }, [members, member?.id]);
+
+  if (isLoading) {
+    return (
+      <div className="pb-20 md:pb-6 flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20 md:pb-6">

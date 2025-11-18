@@ -6,9 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import AvatarPicker from "@/components/AvatarPicker";
 import { getAvatarTheme, applyAvatarTheme } from "@/lib/avatarThemes";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Member, Family } from "@shared/schema";
 
 interface LoginPageProps {
-  onLogin: (data: { name: string; familyCode: string; avatar: string; isParent: boolean }) => void;
+  onLogin: (data: { 
+    member: Member; 
+    family: Family;
+  }) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
@@ -16,6 +22,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [name, setName] = useState("");
   const [familyCode, setFamilyCode] = useState("");
   const [avatar, setAvatar] = useState("🐱");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   
   const currentTheme = getAvatarTheme(avatar);
   
@@ -25,21 +33,52 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     }
   }, [avatar, isSignup]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && familyCode.trim()) {
-      // Check if family code ends with "boss" for parent mode
+    if (!name.trim() || !familyCode.trim()) {
+      toast({
+        title: "Missing fields",
+        description: "Please enter your name and family code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
       const isParent = familyCode.toLowerCase().endsWith("boss");
       const cleanFamilyCode = isParent 
         ? familyCode.slice(0, -4).trim() 
         : familyCode.trim();
-      
-      onLogin({ 
-        name: name.trim(), 
-        familyCode: cleanFamilyCode.toUpperCase(), 
-        avatar,
-        isParent 
+
+      const endpoint = isSignup ? "/api/auth/signup" : "/api/auth/login";
+      const response = await apiRequest("POST", endpoint, {
+        name: name.trim(),
+        familyCode: cleanFamilyCode.toUpperCase(),
+        avatar: isSignup ? avatar : undefined,
+        isParent,
       });
+
+      const data = await response.json();
+
+      if (data.success) {
+        onLogin({
+          member: data.member,
+          family: data.family,
+        });
+      } else {
+        throw new Error(data.error || "Authentication failed");
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      toast({
+        title: isSignup ? "Signup failed" : "Login failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,8 +145,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             type="submit"
             className="w-full h-14 text-xl"
             data-testid="button-submit-login"
+            disabled={isLoading}
           >
-            {isSignup ? "Join Family 🎉" : "Log In"}
+            {isLoading ? "Loading..." : isSignup ? "Join Family 🎉" : "Log In"}
           </Button>
 
           <button
