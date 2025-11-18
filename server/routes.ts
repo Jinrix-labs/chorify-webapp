@@ -66,6 +66,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/members/:id", async (req, res) => {
+    try {
+      const member = await storage.getMember(req.params.id);
+      if (!member) {
+        return res.status(404).json({ error: "Member not found" });
+      }
+      res.json(member);
+    } catch (error) {
+      console.error("Get member error:", error);
+      res.status(500).json({ error: "Failed to fetch member" });
+    }
+  });
+
+  app.get("/api/families/:id", async (req, res) => {
+    try {
+      const family = await storage.getFamily(req.params.id);
+      if (!family) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+      res.json(family);
+    } catch (error) {
+      console.error("Get family error:", error);
+      res.status(500).json({ error: "Failed to fetch family" });
+    }
+  });
+
   app.get("/api/families/:familyId/members", async (req, res) => {
     try {
       const members = await storage.getMembersByFamily(req.params.familyId);

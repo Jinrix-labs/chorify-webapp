@@ -38,6 +38,7 @@ export default function ParentDashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
       queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
       toast({
         title: "Success!",
         description: "Chore approved and points awarded! 🎉",
@@ -80,6 +81,7 @@ export default function ParentDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
       toast({
         title: "Success!",
         description: "Points adjusted successfully!",
