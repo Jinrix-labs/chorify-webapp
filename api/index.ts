@@ -1,7 +1,7 @@
 // Vercel serverless function wrapper for Express app
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-// Import and ensure app is initialized
+// Import the Express app directly - Vercel will handle TypeScript compilation
 let app: any;
 let initPromise: Promise<any> | null = null;
 
@@ -10,11 +10,17 @@ async function getApp() {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    const module = await import("../server/index.js");
-    // Wait for app initialization to complete (routes registered)
-    await module.initializeApp();
-    app = module.default;
-    return app;
+    try {
+      // Import from the source TypeScript file - Vercel compiles it
+      const module = await import("../server/index.ts");
+      // Wait for app initialization to complete (routes registered)
+      await module.initializeApp();
+      app = module.default;
+      return app;
+    } catch (error) {
+      console.error("Failed to initialize app:", error);
+      throw error;
+    }
   })();
 
   return initPromise;

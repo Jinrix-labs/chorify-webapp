@@ -4,6 +4,11 @@
   "outputDirectory": "dist/public",
   "installCommand": "npm install --include=dev",
   "framework": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
