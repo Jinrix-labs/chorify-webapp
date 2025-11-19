@@ -116,8 +116,11 @@ export default function ChoresPage() {
     createChoreMutation.mutate(chore);
   };
 
-  const unassignedChores = chores?.filter((c) => c.status === "available") || [];
-  const myChores = chores?.filter((c) => c.assignedToId === member?.id && c.status === "claimed") || [];
+  const unassignedChores = chores?.filter((c) => c.status === "available" && !c.assignedToId) || [];
+  const myChores = chores?.filter((c) =>
+    c.assignedToId === member?.id &&
+    (c.status === "claimed" || c.status === "available")
+  ) || [];
 
   if (choresLoading) {
     return (
