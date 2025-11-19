@@ -1,4 +1,5 @@
 const CACHE_NAME = 'family-chores-v1';
+
 const urlsToCache = [
   '/',
   '/index.html',
@@ -17,6 +18,12 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only cache GET requests
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
