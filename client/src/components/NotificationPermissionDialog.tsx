@@ -63,13 +63,13 @@ export default function NotificationPermissionDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="notification-dialog-description">
         <DialogHeader>
           <div className="mx-auto mb-4 text-6xl">🔔</div>
           <DialogTitle className="text-2xl font-black text-center">
             Stay in the Loop!
           </DialogTitle>
-          <DialogDescription className="text-center text-base">
+          <DialogDescription id="notification-dialog-description" className="text-center text-base">
             Get notified instantly when:
             <ul className="mt-3 space-y-2 text-left">
               <li className="flex items-center gap-2">

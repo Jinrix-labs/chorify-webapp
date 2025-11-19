@@ -130,13 +130,13 @@ export default function InstallPrompt() {
   if (showIOSPrompt) {
     return (
       <Dialog open={showIOSPrompt} onOpenChange={setShowIOSPrompt}>
-        <DialogContent className="max-w-sm" data-testid="dialog-ios-install">
+        <DialogContent className="max-w-sm" data-testid="dialog-ios-install" aria-describedby="ios-install-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-3xl">📱</span>
               Install Family Chores
             </DialogTitle>
-            <DialogDescription className="space-y-4 pt-4">
+            <DialogDescription id="ios-install-description" className="space-y-4 pt-4">
               <p>
                 Install this app on your iPhone for the best experience:
               </p>

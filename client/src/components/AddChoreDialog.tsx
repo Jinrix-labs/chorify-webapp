@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,11 +60,14 @@ export default function AddChoreDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="add-chore-description">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Add New Chore 🎯
           </DialogTitle>
+          <DialogDescription id="add-chore-description">
+            Create a new chore for your family. Choose an emoji, set the description, points, and optionally assign it to a family member.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
