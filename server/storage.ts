@@ -250,7 +250,7 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { db } from "./db";
+import { db } from "./db.js";
 import { families, members, chores, rewards, rewardRedemptions } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
