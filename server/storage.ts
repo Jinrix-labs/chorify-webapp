@@ -9,7 +9,7 @@ import {
   type InsertReward,
   type RewardRedemption,
   type InsertRewardRedemption,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -251,7 +251,7 @@ export class MemStorage implements IStorage {
 }
 
 import { db } from "./db.js";
-import { families, members, chores, rewards, rewardRedemptions } from "@shared/schema";
+import { families, members, chores, rewards, rewardRedemptions } from "../shared/schema.js";
 import { eq, and } from "drizzle-orm";
 
 export class DbStorage implements IStorage {
