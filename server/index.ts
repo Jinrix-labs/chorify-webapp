@@ -51,7 +51,7 @@ app.use((req, res, next) => {
 let appInitialized = false;
 let initPromise: Promise<void> | null = null;
 
-async function initializeApp() {
+export async function initializeApp() {
   if (appInitialized) return;
   if (initPromise) return initPromise;
 
