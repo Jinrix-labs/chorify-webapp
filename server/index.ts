@@ -63,7 +63,8 @@ export async function initializeApp() {
       const message = err.message || "Internal Server Error";
 
       res.status(status).json({ message });
-      throw err;
+      // Don't throw in serverless - just log
+      console.error("Error:", err);
     });
 
     // For Vercel/serverless, don't serve static files (Vercel handles that)
