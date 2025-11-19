@@ -4,9 +4,14 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
-  throw new Error(
+  const error = new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
   );
+  console.error(error.message);
+  // In serverless, don't throw immediately - let the app handle it gracefully
+  if (!process.env.VERCEL) {
+    throw error;
+  }
 }
 
 // Create connection pool with better error handling
