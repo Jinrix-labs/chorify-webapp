@@ -20,6 +20,48 @@ const CHEER_MESSAGES = [
   "You're the best!",
 ];
 
+// Helper function to get the best available voice
+function getBestVoice(): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return null;
+
+  // Prefer kid-friendly voices (higher pitch, more energetic)
+  // Priority order:
+  // 1. Female voices with "child" or "young" in name
+  // 2. Female voices (generally more kid-friendly)
+  // 3. Any voice with higher pitch capability
+  // 4. Default to first available
+
+  const childVoices = voices.filter(v => 
+    v.name.toLowerCase().includes('child') || 
+    v.name.toLowerCase().includes('young') ||
+    v.name.toLowerCase().includes('zira') || // Windows friendly female voice
+    v.name.toLowerCase().includes('samantha') || // macOS friendly female voice
+    v.name.toLowerCase().includes('karen') // macOS/Australian friendly voice
+  );
+
+  if (childVoices.length > 0) {
+    return childVoices[0];
+  }
+
+  const femaleVoices = voices.filter(v => 
+    v.name.toLowerCase().includes('female') ||
+    v.name.toLowerCase().includes('woman') ||
+    v.name.toLowerCase().includes('zira') ||
+    v.name.toLowerCase().includes('samantha') ||
+    v.name.toLowerCase().includes('karen') ||
+    v.name.toLowerCase().includes('susan') ||
+    v.name.toLowerCase().includes('victoria')
+  );
+
+  if (femaleVoices.length > 0) {
+    return femaleVoices[0];
+  }
+
+  // Fallback to any available voice
+  return voices[0];
+}
+
 export default function CompletionCelebration({
   points,
   onClose,
@@ -29,12 +71,62 @@ export default function CompletionCelebration({
   );
 
   useEffect(() => {
-    // Play cheer sound
-    const utterance = new SpeechSynthesisUtterance(cheerMessage);
-    utterance.rate = 1.2;
-    utterance.pitch = 1.2;
-    utterance.volume = 0.8;
-    window.speechSynthesis.speak(utterance);
+    // Wait for voices to load (they load asynchronously)
+    let voicesLoaded = false;
+    let voiceTimeout: NodeJS.Timeout | null = null;
+    let checkVoicesInterval: NodeJS.Timeout | null = null;
+    
+    const loadVoices = () => {
+      if (window.speechSynthesis.getVoices().length > 0) {
+        voicesLoaded = true;
+      }
+    };
+
+    // Some browsers load voices immediately, others need this event
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    // If voices aren't loaded yet, wait a bit
+    voiceTimeout = setTimeout(() => {
+      voicesLoaded = true;
+    }, 100);
+
+    const speakMessage = () => {
+      const utterance = new SpeechSynthesisUtterance(cheerMessage);
+      
+      // Get the best available voice
+      const voice = getBestVoice();
+      if (voice) {
+        utterance.voice = voice;
+      }
+      
+      // Optimized settings for kid-friendly, energetic voice
+      utterance.rate = 1.15; // Slightly faster for excitement
+      utterance.pitch = 1.3; // Higher pitch for more energetic/cheerful sound
+      utterance.volume = 0.9; // Louder for celebration
+      
+      window.speechSynthesis.speak(utterance);
+    };
+
+    // Wait for voices to be ready before speaking
+    if (voicesLoaded) {
+      speakMessage();
+    } else {
+      checkVoicesInterval = setInterval(() => {
+        if (window.speechSynthesis.getVoices().length > 0) {
+          if (checkVoicesInterval) clearInterval(checkVoicesInterval);
+          if (voiceTimeout) clearTimeout(voiceTimeout);
+          speakMessage();
+        }
+      }, 50);
+      
+      setTimeout(() => {
+        if (checkVoicesInterval) clearInterval(checkVoicesInterval);
+        if (window.speechSynthesis.getVoices().length > 0) {
+          speakMessage();
+        }
+      }, 500);
+    }
 
     const duration = 3000;
     const animationEnd = Date.now() + duration;
@@ -68,6 +160,8 @@ export default function CompletionCelebration({
 
     return () => {
       clearInterval(interval);
+      if (voiceTimeout) clearTimeout(voiceTimeout);
+      if (checkVoicesInterval) clearInterval(checkVoicesInterval);
       window.speechSynthesis.cancel();
     };
   }, [onClose, cheerMessage]);

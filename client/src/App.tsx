@@ -12,6 +12,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import ParentDashboard from "@/pages/ParentDashboard";
 import ProfileHeader from "@/components/ProfileHeader";
 import BottomNav from "@/components/BottomNav";
+import SidebarNav from "@/components/SidebarNav";
 import NotificationPermissionDialog from "@/components/NotificationPermissionDialog";
 import WeeklyChampionBanner from "@/components/WeeklyChampionBanner";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -61,42 +62,48 @@ function AppContent() {
         onPermissionDenied={() => console.log("Notifications denied")}
       />
       
-      <div className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-          <ProfileHeader
-            name={member.name}
-            avatar={member.avatar}
-            points={member.totalPoints}
-            rank={
-              familyMembers
-                ? familyMembers
-                    .sort((a, b) => b.totalPoints - a.totalPoints)
-                    .findIndex((m) => m.id === member.id) + 1
-                : 1
-            }
-            weeklyPoints={member.weeklyPoints}
-            streak={member.streak}
-            notificationCount={0}
-            isChampion={isCurrentUserChampion}
-          />
+      <div className="min-h-screen bg-background flex">
+        {/* Sidebar Navigation - Desktop Only */}
+        <SidebarNav 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          isParent={member.isParent} 
+        />
 
-          {champion && !isCurrentUserChampion && (
-            <WeeklyChampionBanner champion={champion} />
-          )}
+        {/* Main Content */}
+        <div className="flex-1 md:ml-64">
+          <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+            <ProfileHeader
+              name={member.name}
+              avatar={member.avatar}
+              points={member.totalPoints}
+              rank={
+                familyMembers
+                  ? familyMembers
+                      .sort((a, b) => b.totalPoints - a.totalPoints)
+                      .findIndex((m) => m.id === member.id) + 1
+                  : 1
+              }
+              weeklyPoints={member.weeklyPoints}
+              streak={member.streak}
+              notificationCount={0}
+              isChampion={isCurrentUserChampion}
+            />
 
-          <div className="md:hidden">
+            {champion && !isCurrentUserChampion && (
+              <WeeklyChampionBanner champion={champion} />
+            )}
+
+            {/* Page Content - Same for both mobile and desktop */}
             {activeTab === "chores" && <ChoresPage />}
             {activeTab === "parent" && member.isParent && <ParentDashboard />}
             {activeTab === "leaderboard" && <LeaderboardPage />}
             {activeTab === "rewards" && <RewardsPage />}
             {activeTab === "profile" && <ProfilePage />}
           </div>
-
-          <div className="hidden md:block">
-            {member.isParent ? <ParentDashboard /> : <ChoresPage />}
-          </div>
         </div>
 
+        {/* Bottom Navigation - Mobile Only */}
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isParent={member.isParent} />
       </div>
     </>
