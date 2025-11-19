@@ -116,11 +116,19 @@ export default function ChoresPage() {
     createChoreMutation.mutate(chore);
   };
 
+  // Debug logging
+  console.log("All chores from API:", chores);
+  console.log("Current member ID:", member?.id);
+  console.log("Family ID:", family?.id);
+
   const unassignedChores = chores?.filter((c) => c.status === "available" && !c.assignedToId) || [];
   const myChores = chores?.filter((c) =>
     c.assignedToId === member?.id &&
     (c.status === "claimed" || c.status === "available")
   ) || [];
+
+  console.log("Unassigned chores:", unassignedChores);
+  console.log("My chores:", myChores);
 
   if (choresLoading) {
     return (

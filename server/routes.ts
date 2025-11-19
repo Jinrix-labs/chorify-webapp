@@ -116,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/families/:familyId/chores", async (req, res) => {
     try {
       const chores = await storage.getChoresByFamily(req.params.familyId);
+      console.log(`[API] Fetching chores for family ${req.params.familyId}:`, chores);
       res.json(chores);
     } catch (error) {
       console.error("Get chores error:", error);
