@@ -1,4 +1,4 @@
-const CACHE_NAME = 'family-chores-v1';
+const CACHE_NAME = 'family-chores-v2';
 
 const urlsToCache = [
   '/',
