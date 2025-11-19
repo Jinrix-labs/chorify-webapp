@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
+import { log } from "./logger.js";
 
 const app = express();
 
@@ -73,9 +73,11 @@ export async function initializeApp() {
       console.log("Running in Vercel - static files served by Vercel");
     } else if (process.env.NODE_ENV === "production") {
       // Production but not Vercel - serve static files
+      const { serveStatic } = await import("./vite.js");
       serveStatic(app);
     } else {
       // Development - use Vite dev server
+      const { setupVite } = await import("./vite.js");
       await setupVite(app, server);
     }
 
