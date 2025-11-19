@@ -11,13 +11,9 @@ async function getApp() {
 
   initPromise = (async () => {
     const module = await import("../server/index.js");
-    // Import the initialization function to ensure routes are registered
-    // The server/index.ts will initialize routes when imported
+    // Wait for app initialization to complete (routes registered)
+    await module.initializeApp();
     app = module.default;
-    
-    // Give a moment for async initialization to complete
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
     return app;
   })();
 
