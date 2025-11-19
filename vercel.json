@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm ci && npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install --include=dev",
+  "installCommand": "npm ci",
   "framework": null,
   "rewrites": [
     {
