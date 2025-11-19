@@ -66,13 +66,15 @@ export async function initializeApp() {
       throw err;
     });
 
-    // For Vercel/serverless, just serve static files
-    // For local dev, setup Vite
-    if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-      serveStatic(app);
+    // For Vercel/serverless, don't serve static files (Vercel handles that)
+    // Only setup static/Vite for non-serverless environments
+    if (process.env.VERCEL) {
+      // In Vercel, static files are served separately, we only handle API routes
+      // Don't add any static file serving middleware
     } else if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
+      // Production but not Vercel - serve static files
       serveStatic(app);
     }
 
