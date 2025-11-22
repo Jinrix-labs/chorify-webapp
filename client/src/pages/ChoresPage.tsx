@@ -34,8 +34,8 @@ export default function ChoresPage() {
       const res = await apiRequest("PATCH", `/api/chores/${choreId}/claim`, { memberId });
       return res.json();
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
+    onSuccess: async (_, variables) => {
+      await queryClient.refetchQueries({ queryKey: ["/api/families", family?.id, "chores"] });
       const chore = chores?.find((c) => c.id === variables.choreId);
       if (chore) {
         notifications.choreClaimed(member?.name || "You", chore.title, chore.emoji);
@@ -55,13 +55,14 @@ export default function ChoresPage() {
       const res = await apiRequest("PATCH", `/api/chores/${choreId}/complete`, { memberId });
       return res.json();
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/families", family?.id, "chores"] });
+    onSuccess: async (_, variables) => {
       const chore = chores?.find((c) => c.id === variables.choreId);
       if (chore) {
         setCelebration(chore.points);
         notifications.choreCompleted(member?.name || "You", chore.title, chore.points, chore.emoji);
       }
+      // Force immediate refetch instead of just invalidating
+      await queryClient.refetchQueries({ queryKey: ["/api/families", family?.id, "chores"] });
     },
     onError: (error) => {
       toast({
