@@ -1,9 +1,12 @@
-const CACHE_NAME = 'family-chores-v2';
+const CACHE_NAME = 'family-chores-v3';
 
 const urlsToCache = [
   '/',
   '/index.html',
   '/favicon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {
